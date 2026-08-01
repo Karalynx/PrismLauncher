@@ -38,7 +38,6 @@
 #include <QComboBox>
 #include <QListWidget>
 #include <algorithm>
-#include <list>
 #include "BaseVersionList.h"
 #include "Json.h"
 #include "Version.h"
@@ -50,9 +49,9 @@
 #include "Application.h"
 #include "minecraft/PackProfile.h"
 
-std::unique_ptr<ModFilterWidget> ModFilterWidget::create(MinecraftInstance* instance, bool extended)
+ModFilterWidget* ModFilterWidget::create(MinecraftInstance* instance, bool extended)
 {
-    return std::unique_ptr<ModFilterWidget>(new ModFilterWidget(instance, extended));
+    return new ModFilterWidget(instance, extended);
 }
 
 class VersionBasicModel : public QIdentityProxyModel {
@@ -227,7 +226,7 @@ void ModFilterWidget::prepareBasicFilter()
     m_filter->openSource = false;
     if (m_instance) {
         m_filter->hideInstalled = false;
-        m_filter->side = ModPlatform::Side::NoSide;  // or "both"
+        m_filter->side = ModPlatform::SideType::NoSide;  // or "both"
         ModPlatform::ModLoaderTypes loaders;
         if (m_instance->settings()->get("OverrideModDownloadLoaders").toBool()) {
             for (auto loader : Json::toStringList(m_instance->settings()->get("ModDownloadLoaders").toString())) {
@@ -311,16 +310,16 @@ void ModFilterWidget::onLoadersFilterChanged()
 
 void ModFilterWidget::onSideFilterChanged()
 {
-    ModPlatform::Side side;
+    ModPlatform::SideType side;
 
     if (ui->clientSide->isChecked() && !ui->serverSide->isChecked()) {
-        side = ModPlatform::Side::ClientSide;
+        side = ModPlatform::SideType::ClientSide;
     } else if (!ui->clientSide->isChecked() && ui->serverSide->isChecked()) {
-        side = ModPlatform::Side::ServerSide;
+        side = ModPlatform::SideType::ServerSide;
     } else if (ui->clientSide->isChecked() && ui->serverSide->isChecked()) {
-        side = ModPlatform::Side::UniversalSide;
+        side = ModPlatform::SideType::UniversalSide;
     } else {
-        side = ModPlatform::Side::NoSide;
+        side = ModPlatform::SideType::NoSide;
     }
 
     m_filter_changed = side != m_filter->side;

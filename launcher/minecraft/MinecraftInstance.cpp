@@ -927,11 +927,6 @@ QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, Minecr
                 return aName.localeAwareCompare(bName) < 0;
             });
             for (auto mod : modList) {
-                if (mod->type() == ResourceType::FOLDER) {
-                    out << u8"  [🖿] " + mod->fileinfo().completeBaseName() + " (folder)";
-                    continue;
-                }
-
                 if (mod->enabled()) {
                     out << u8"  [✔] " + mod->fileinfo().completeBaseName();
                 } else {
@@ -1095,7 +1090,9 @@ QString MinecraftInstance::getStatusbarDescription()
     QString mcVersion = m_components->getComponentVersion("net.minecraft");
     if (mcVersion.isEmpty()) {
         // Load component info if needed
-        m_components->reload(Net::Mode::Offline);
+        if (auto res = m_components->reload(Net::Mode::Offline); !res) {
+            qWarning() << "Failed to reload components:" << res.error();
+        }
         mcVersion = m_components->getComponentVersion("net.minecraft");
     }
 
